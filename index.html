@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover'>
+<meta name='theme-color' content='#1a1e23'>
+<meta name='apple-mobile-web-app-capable' content='yes'>
+<meta name='mobile-web-app-capable' content='yes'>
+<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>
+<meta name='apple-mobile-web-app-title' content='Gimnasio'>
+<link rel='apple-touch-icon' href='apple-touch-icon.png'>
+<link rel='icon' href='icono-192.png'>
+<link rel='manifest' href='manifest.webmanifest'>
+<title>Gimnasio</title>
+<link rel='stylesheet' href='gym.css'>
+<link rel='stylesheet' href='app.css'>
+</head>
+<body>
+<div id='bienvenida' class='g-bienvenida' hidden>
+<div class='g-bv-caja'>
+<h1 class='g-title'>Gimnasio</h1>
+<p class='g-lede'>Apunta tus entrenos, sube de nivel y mira qué pesos te toca subir. Todo se guarda solo en tu móvil.</p>
+<form id='form-bienvenida' class='g-bv-form'>
+<label class='g-campo'><span>Tu nombre (opcional)</span><input class='g-input' id='bv-nombre' type='text' autocomplete='off'></label>
+<div class='g-aj-grid'>
+<label class='g-campo'><span>Peso corporal (kg)</span><input class='g-input' id='bv-peso' type='text' inputmode='decimal' required></label>
+<label class='g-campo'><span>Altura (cm o m)</span><input class='g-input' id='bv-altura' type='text' inputmode='decimal'></label>
+</div>
+<h2 class='g-h3 g-bv-h'>Tu rutina</h2>
+<div id='bv-rutina'></div>
+<h2 class='g-h3 g-bv-h'>Tus básicos</h2>
+<p class='g-mini-t'>Tus récords a una repetición, si los sabes. Puedes cambiarlos luego en Ajustes.</p>
+<div class='g-aj-grid g-aj-3'>
+<label class='g-campo'><span>Banca (kg)</span><input class='g-input' id='bv-banca' type='text' inputmode='decimal'></label>
+<label class='g-campo'><span>Sentadilla (kg)</span><input class='g-input' id='bv-sentadilla' type='text' inputmode='decimal'></label>
+<label class='g-campo'><span>Peso muerto (kg)</span><input class='g-input' id='bv-pm' type='text' inputmode='decimal'></label>
+</div>
+<button class='g-btn g-btn-go' type='submit'>Empezar</button>
+<button class='g-btn g-btn-claro' type='button' data-accion='importar'>Ya tengo una copia de mis datos: importarla</button>
+</form>
+</div>
+</div>
+<div class='gym'>
+
+<header id='inicio'>
+<div class='g-hero-top'>
+<h1 class='g-title'>Gimnasio</h1>
+<div class='g-count'><div class='g-count-row'><span class='g-count-n' data-draw='sem_n' data-source='semana_actual' data-field='entrenos' data-row='0'>—</span><span class='g-count-of'>/<span data-draw='objetivo'>—</span></span></div><span class='g-count-l'>entrenos esta semana</span></div>
+</div>
+<div class='g-pj' id='personaje' data-draw='pj' data-source='rpg'></div>
+<div class='g-bar' id='semana' data-draw='semana' data-source='dias'></div>
+<div class='g-key' aria-hidden='true' data-draw='leyenda_dias' data-source='dias'></div>
+</header>
+
+<section class='g-log' id='apuntar' aria-labelledby='apuntar-h'>
+<div class='g-log-head'><h2 class='g-h2' id='apuntar-h'>Apuntar</h2><span class='g-note'>Peso x repeticiones, por ejemplo “banca 95x8, 95x7”</span></div>
+<form id='form-apuntar'><input class='g-input' id='in-texto' name='texto' type='text' placeholder='press banca 95x8, 95x7…' autocomplete='off' spellcheck='false' enterkeyhint='send' aria-label='Ejercicio, peso y repeticiones'><button class='g-btn' type='submit'>Añadir</button></form>
+<div class='g-draft' id='draft' hidden>
+<div class='g-row'><select class='g-select' id='draft-ej' data-draw='draft_ej' data-source='ejercicios' aria-label='Ejercicio'></select><select class='g-select' id='draft-dia' data-draw='draft_dia' aria-label='Tipo de día'></select></div>
+<div class='g-sets' data-draw='draft_series'></div>
+<div class='g-draft-musc' data-draw='draft_musc'></div>
+<p class='g-warn' id='draft-msg' hidden>Falta el peso o las repeticiones de alguna serie. Rellénalas o quítala.</p>
+<p class='g-warn' id='draft-msg-ej' hidden>Elige el ejercicio en la lista.</p>
+<div class='g-row'><button class='g-btn' type='button' id='btn-guardar'>Guardar ejercicio</button><button class='g-btn g-btn-sec' type='button' id='btn-serie'>Añadir serie</button><button class='g-btn g-btn-sec' type='button' id='btn-cancelar'>Cancelar</button></div>
+</div>
+<p class='g-warn' id='unsaved' role='status' aria-live='polite' hidden>No se ha podido guardar. Comprueba la conexión y vuelve a intentarlo.</p>
+<div class='g-hoy-h'><h3 class='g-h3'>Hoy</h3></div>
+<p class='g-hoy-vacio' id='hoy-vacio'>Todavía no has apuntado nada hoy.</p>
+<ul class='g-hoy' data-draw='hoy' data-source='entrenos sesiones'></ul>
+<div class='g-fin' id='fin' data-draw='fin' data-source='sesiones sesiones_ejercicio entrenos perfil prs'></div>
+</section>
+
+<section class='g-sec' id='plan' aria-labelledby='plan-h'>
+<div class='g-sec-head'><h2 class='g-h2' id='plan-h'>Tus pesos de la última vez</h2><p class='g-note'>Lo que levantaste la última vez en cada día. Si en la primera serie llegaste a 10 repeticiones (12 en ejercicios de un solo músculo), toca subir de peso; si hiciste menos de 4, baja.</p></div>
+<div class='g-hist' data-draw='plan' data-source='ultimo_por_dia'></div>
+</section>
+
+<section class='g-sec' id='aventura' aria-labelledby='aventura-h'>
+<div class='g-sec-head'><h2 class='g-h2' id='aventura-h'>Misiones de la semana</h2></div>
+<div class='g-card g-mis-card'><ul class='g-mis' data-draw='misiones' data-source='misiones'></ul></div>
+</section>
+
+<section class='g-sec' id='basicos-sec' aria-labelledby='basicos-h'>
+<div class='g-sec-head'><h2 class='g-h2' id='basicos-h'>Tus básicos</h2></div>
+<div class='g-bminis' id='basicos' data-draw='basicos_mini' data-source='basicos_estado'></div>
+</section>
+
+<div id='gym-cuerpo' hidden>
+<section class='g-sec' id='mapa' aria-labelledby='mapa-h'>
+<div class='g-sec-head'><h2 class='g-h2' id='mapa-h'>Tu clase por músculo</h2><p class='g-note'>Según cuánto mueves comparado con lo normal para tu peso corporal. Toca un músculo para ver su clase.</p><p class='g-warn' id='sin-peso' hidden>Falta tu peso corporal para calcular las clases. Añádelo en Ajustes, al final de la página.</p></div>
+<div class='g-two'>
+<div class='g-card'><div class='g-body' id='cuerpo' data-draw='cuerpo' data-source='niveles_musculo'></div><div class='g-legend' data-draw='leyenda' aria-hidden='true'></div></div>
+<div class='g-grupos' id='grupos' data-draw='grupos' data-source='grupos'></div>
+</div>
+</section>
+
+<section class='g-sec' id='progresion' aria-labelledby='prog-h'>
+<div class='g-sec-head'><h2 class='g-h2' id='prog-h'>Progresión</h2><p class='g-note'>Cuánto ha subido tu fuerza estimada desde tu entreno base del <span data-draw='base_txt'>—</span>.</p></div>
+<div class='g-row g-select-row'><div class='g-seg' role='group' aria-label='Ver progresión por'><button type='button' id='seg-dia' class='on' aria-pressed='true'>Por día</button><button type='button' id='seg-musc' aria-pressed='false'>Por músculo</button></div><select class='g-sel-dark' id='sel-prog' data-draw='sel_prog' data-source='progreso_actual progreso_dia' aria-label='Qué día o músculo ver'></select></div>
+<div class='g-card'><div class='g-chart' id='evolucion' data-draw='evolucion' data-source='progreso progreso_dia'></div></div>
+</section>
+
+<section class='g-sec' id='constancia' aria-labelledby='const-h'>
+<div class='g-sec-head g-cal-top'><h2 class='g-h2' id='const-h'>Constancia</h2><div class='g-cal-nav'><button type='button' id='cal-prev' aria-label='Mes anterior'>‹</button><button type='button' id='cal-next' aria-label='Mes siguiente'>›</button></div></div><div class='g-card g-cal-card'><div class='g-cal' id='cal' data-draw='cal' data-source='dias'></div></div>
+</section>
+
+<details class='g-fold' id='historial'><summary><h2 class='g-h2'>Historial</h2><span class='g-fold-sub'>Últimos 12 entrenos</span></summary><div class='g-fold-body'><div class='g-hist' data-draw='historial' data-source='entrenos_hist sesiones_ejercicio prs'></div></div></details>
+</div>
+<p class='g-empty' id='lede-vacio' hidden>Cuando apuntes tus primeros ejercicios, aquí aparecerán el mapa muscular, tu progresión y el historial.</p>
+
+<details class='g-fold' id='rutina'><summary><h2 class='g-h2'>Tu rutina</h2><span class='g-fold-sub'>Días, nombres y colores</span></summary><div class='g-fold-body' data-draw='ajustes_rutina'></div></details>
+
+<details class='g-fold' id='ajustes'><summary><h2 class='g-h2'>Ajustes</h2><span class='g-fold-sub'>Perfil, básicos, ejercicios y copias</span></summary><div class='g-fold-body' data-draw='ajustes' data-source='perfil basicos ejercicios'></div></details>
+
+<details class='g-details' id='ejercicios-sec'><summary>Ejercicios y músculos que trabajan</summary><p>El número indica cuánto cuenta el ejercicio para cada músculo: 1 si es el principal, 0,5 o menos si es secundario.</p><div class='g-tablewrap'><table class='g-table' data-source='reparto' data-row-key='id'><thead><tr><th data-field='nombre'>Ejercicio</th><th data-field='dias'>Días</th><th data-field='reparto'>Músculos</th></tr></thead><tbody data-draw='tabla_reparto'></tbody></table></div></details>
+<details class='g-details' id='metodo'><summary>Cómo se calcula</summary>
+<p>Fuerza estimada: de cada ejercicio se toma la mejor serie y se convierte en un 1RM con la fórmula de Epley, peso × (1 + repeticiones / 30). Por cada posición después del primer ejercicio del día se suma un <b data-draw='fatiga'>—</b> por fatiga: en cuarto lugar cuenta un <b data-draw='fatiga4'>—</b> más.</p>
+<p>Las clases comparan tu mejor 1RM de las últimas 12 semanas con estándares de fuerza para tu peso corporal. La de cada grupo es la media de sus músculos. La progresión cuenta desde tu entreno base, que puedes cambiar en Ajustes. El entreno de hoy cuenta cuando pulsas Terminar entreno.</p>
+<p>Experiencia: 100 por entreno, 4 por serie y 50 por récord personal (cuando superas tu mejor 1RM estimado de un ejercicio). Las misiones de la semana dan 150 por entrenar 5 días, 50 por hacer pierna y 50 por batir un récord. Cada nivel pide 300 + 100 × tu nivel, y cada pocos niveles subes de categoría.</p>
+</details>
+</div>
+<script src='d3.min.js'></script>
+<script src='shim.js'></script>
+<script src='catalogo.js'></script>
+<script src='gym-base.js'></script>
+<script src='gym-calc.js'></script>
+<script src='gym-rpg.js'></script>
+<script src='gym-ui.js'></script>
+<script src='gym-cuerpo.js'></script>
+<script src='gym-log.js'></script>
+<script src='gym-app.js'></script>
+<script>if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});</script>
+</body>
+</html>
